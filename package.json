@@ -1,18 +1,17 @@
 {
-  "name": "mi-web-canvas",
+  "name": "canvas-artwork",
   "version": "1.0.0",
   "type": "module",
-  "description": "Sistema para subir y gestionar Canvas para OpenTune",
-  "main": "index.html",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build required'",
-    "deploy": "vercel --prod"
+    "build": "echo 'No build required'"
   },
   "dependencies": {
     "@vercel/blob": "^0.25.0"
   },
   "devDependencies": {
-    "vercel": "^34.0.0"
+    "@vercel/node": "^3.0.0"
   }
 }

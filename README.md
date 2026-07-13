@@ -1,173 +1,182 @@
-# Canvas-Artwork 🎨
+# Canvas Studio 🎨
 
-**Canvas for OpenTune** — Una plataforma web para crear, subir y gestionar videos animados con Canvas, diseñada para integración con la aplicación OpenTune.
+**Canvas Studio for OpenTune** — Una plataforma web para subir y gestionar videos animados (Canvas) diseñada para integrarse con la aplicación OpenTune.
 
 ---
 
 ## 📋 Descripción
 
-Canvas-Artwork es una **Web API** que permite:
+Canvas Studio es una **Web API** que permite:
 
-- ✏️ **Crear animaciones** usando Canvas HTML5
-- 📹 **Generar videos** a partir de renderizados canvas
-- ☁️ **Subir y gestionar** videos animados en la nube
-- 🔌 **Comunicarse** de forma fluida con la aplicación OpenTune
-- 🎬 **Reproducir** contenido multimedia interactivo
+- 📤 **Subir videos animados** (MP4, WebM) asociados a canciones
+- 🔍 **Buscar Canvas** por artista, álbum y canción
+- 📋 **Gestionar** tu colección de Canvas (listar, eliminar)
+- 🔌 **Integrarse** con OpenTune a través de una API REST
+- 🎬 **Reproducir** los Canvas directamente desde la app
 
-Es la solución perfecta para artistas y desarrolladores que desean automatizar la creación de contenido visual animado directamente desde Canvas.
+Es la solución perfecta para ampliar la biblioteca de Canvas de OpenTune con contenido personalizado o creado por la comunidad.
 
 ---
 
 ## 🚀 Características Principales
 
 ### 1. API REST Completa
-- Endpoints para gestión de animaciones y videos
-- Autenticación y autorización segura
-- Respuestas en JSON
+- Endpoints para búsqueda, subida y gestión de Canvas
+- Respuestas en JSON con formato claro
+- Caché integrada para reducir llamadas repetidas
 
-### 2. Renderizado Canvas
-- Soporte para animaciones 2D y 3D
-- Exportación de frames a video
-- Optimización de rendimiento
+### 2. Almacenamiento en la Nube
+- Videos alojados en **Vercel Blob Storage**
+- Acceso público para reproducción directa
+- Índice en JSON para búsqueda rápida
 
-### 3. Gestión de Archivos
-- Upload de videos animados
-- Almacenamiento en la nube
-- Versionado de contenido
+### 3. Búsqueda Flexible
+- Búsqueda por **Artista + Álbum** (recomendado)
+- Búsqueda por **Artista + Álbum + Canción**
+- Búsqueda por **Artista** o **Álbum** individual
+- Coincidencia parcial para mayor precisión
 
-### 4. Integración OpenTune
-- Comunicación bidireccional con la app
-- Webhooks para notificaciones
-- Sistema de callbacks
+### 4. Interfaz Web
+- Panel de administración visual
+- Subida de archivos con arrastrar y soltar
+- Vista previa de los Canvas subidos
+- Copiar URL y eliminar directamente desde la web
+
+### 5. Integración OpenTune
+- Compatible con el sistema de proveedores de Canvas
+- Orden de búsqueda: Apple Music → Canvas Studio → Tidal
+- Retorna URLs directas para reproducción en ExoPlayer
 
 ---
 
 ## 🛠 Stack Tecnológico
 
-- **Frontend**: HTML5, CSS3 (31.1%), JavaScript (44.4%)
-- **Backend**: Node.js / Express (API)
-- **Canvas**: HTML5 Canvas API para renderizado
-- **Video**: FFmpeg o similar para conversión
-- **Almacenamiento**: Cloud Storage
-
----
-
-## 📦 Instalación
-
-### Requisitos Previos
-- Node.js v14+
-- npm o yarn
-- Docker (opcional)
-
-### Pasos
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/Arturo254/Canvas-Artwork.git
-cd Canvas-Artwork
-
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus credenciales
-
-# Iniciar servidor
-npm start
-```
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Backend**: Vercel Serverless Functions (Node.js)
+- **Almacenamiento**: Vercel Blob Storage
+- **CDN**: Vercel Edge Network
 
 ---
 
 ## 🎯 Uso Rápido
 
-### Crear una Animación Canvas
+### Buscar un Canvas (API)
 
-```javascript
-const canvas = document.getElementById('myCanvas');
-const ctx = canvas.getContext('2d');
+```bash
+# Por artista + álbum
+curl "https://opentune-canvas.vercel.app/api/search?artist=Peso%20Pluma&album=DINAST%C3%8DA"
 
-// Animación de ejemplo
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(10, 10, 100, 100);
-  requestAnimationFrame(animate);
-}
-
-animate();
+# Por artista + álbum + canción
+curl "https://opentune-canvas.vercel.app/api/search?artist=SZA&album=SOS&song=Kill%20Bill"
 ```
 
-### Subir Video a través de la API
+### Subir un Canvas (API)
 
-```javascript
-async function uploadVideo(videoFile) {
-  const formData = new FormData();
-  formData.append('video', videoFile);
-  formData.append('title', 'Mi Animación');
-  
-  const response = await fetch('/api/videos/upload', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    },
-    body: formData
-  });
-  
-  return await response.json();
-}
+```bash
+curl -X POST "https://opentune-canvas.vercel.app/api/upload" \
+  -F "artist=SZA" \
+  -F "album=SOS" \
+  -F "song=Kill Bill" \
+  -F "video=@/ruta/a/tu/video.mp4"
 ```
+
+### Desde la Web
+
+1. Visita [https://opentune-canvas.vercel.app](https://opentune-canvas.vercel.app)
+2. Completa los campos: Artista, Álbum y Canción (opcional)
+3. Selecciona tu archivo de video (máx. 6MB)
+4. Haz clic en "Subir Canvas"
+5. El Canvas aparecerá en la lista y estará disponible para OpenTune
 
 ---
 
 ## 📡 API Endpoints
 
-### Videos
-- `GET /api/videos` — Listar videos
-- `POST /api/videos/upload` — Subir nuevo video
-- `GET /api/videos/:id` — Obtener detalles
-- `DELETE /api/videos/:id` — Eliminar video
+### Listar Canvas
+```
+GET /api/list
+```
+Devuelve todos los Canvas almacenados.
 
-### Animaciones
-- `POST /api/animations/render` — Renderizar canvas a video
-- `GET /api/animations/:id` — Obtener animación
-- `PUT /api/animations/:id` — Actualizar animación
+### Buscar Canvas
+```
+GET /api/search?artist=X&album=Y&song=Z
+```
+Busca Canvas por parámetros. Artista y álbum son recomendados, canción es opcional.
 
-### Integración OpenTune
-- `POST /api/opentune/sync` — Sincronizar con OpenTune
-- `GET /api/opentune/status` — Estado de conexión
+### Subir Canvas
+```
+POST /api/upload
+```
+Sube un nuevo Canvas. Body: multipart/form-data con `artist`, `album`, `song` (opcional) y `video`.
+
+### Eliminar Canvas
+```
+DELETE /api/delete
+```
+Elimina un Canvas por ID. Body JSON: `{ "id": "sza_sos_kill_bill" }`
 
 ---
 
-## 🔐 Autenticación
+## 📦 Estructura de Datos
 
-Utiliza **JWT (JSON Web Tokens)** para autenticación:
+### Respuesta de Búsqueda (encontrado)
+```json
+{
+  "success": true,
+  "found": true,
+  "data": {
+    "id": "peso_pluma_dinastia",
+    "artist": "Peso Pluma",
+    "album": "DINASTÍA",
+    "song": "",
+    "url": "https://...blob.../peso_pluma_dinastia.mp4",
+    "type": "mp4",
+    "uploadedAt": "2026-07-12T..."
+  }
+}
+```
 
-```javascript
-// Header requerido en todas las peticiones
-Authorization: Bearer {token}
+### Respuesta de Búsqueda (no encontrado)
+```json
+{
+  "success": true,
+  "found": false,
+  "data": null
+}
 ```
 
 ---
 
-## 📚 Documentación Completa
+## 🔧 Integración con OpenTune
 
-Para documentación detallada sobre endpoints, modelos de datos y ejemplos, consulta:
-- [API Documentation](./docs/API.md)
-- [Canvas Guide](./docs/CANVAS.md)
-- [OpenTune Integration](./docs/OPENTUNE.md)
+Canvas Studio se integra como un proveedor más en el sistema de Canvas de OpenTune. El orden de búsqueda es:
+
+1. **Apple Music** (carátulas animadas oficiales)
+2. **Canvas Studio** (tu contenido personalizado)
+3. **Tidal** (fallback)
+
+### Cómo funciona:
+1. OpenTune solicita un Canvas para una canción
+2. Busca primero en Apple Music
+3. Si no encuentra, consulta Canvas Studio
+4. Si no encuentra, prueba Tidal
+5. Devuelve la URL del Canvas (o null)
 
 ---
 
-## 🤝 Contribuir
+## 🚀 Despliegue
 
-Las contribuciones son bienvenidas. Para cambios importantes:
+El proyecto está desplegado en [Vercel](https://vercel.com) con:
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. **Frontend** en la raíz del proyecto
+2. **Serverless Functions** en la carpeta `/api`
+3. **Blob Storage** para almacenar videos e índice
+
+### Variables de Entorno
+- `BLOB_READ_WRITE_TOKEN` — Token para Vercel Blob Storage
+- `BLOB_STORE_ID` — ID de la store (autogenerado)
+- `BLOB_WEBHOOK_PUBLIC_KEY` — Clave para webhooks (autogenerado)
 
 ---
 
@@ -185,7 +194,7 @@ Este proyecto está bajo la licencia MIT — ver el archivo [LICENSE](LICENSE) p
 
 ## 🎨 Créditos
 
-Creado por **Arturo254** | Canvas for OpenTune
+Creado por **Arturo254** | OpenTune Canvas Studio
 
 ---
 

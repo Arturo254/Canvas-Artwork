@@ -50,6 +50,14 @@ export default async function handler(req, res) {
             });
         }
 
+        // Validate video file size (MAX 6MB)
+        if (!files.video || files.video.size > 6 * 1024 * 1024) {
+            return res.status(400).json({
+                success: false,
+                error: 'El archivo de video debe ser menor a 6MB'
+            });
+        }
+
         if (!files.video) {
             return res.status(400).json({
                 success: false,

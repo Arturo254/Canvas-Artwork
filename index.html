@@ -1,72 +1,476 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎨 Canvas Manager - Sube tus Canvas</title>
+    <title>Canvas Manager - OpenTune</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flowbite -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+    <!-- Iconos -->
+    <link rel='stylesheet'
+        href='https://cdn-uicons.flaticon.com/2.0.0/uicons-bold-straight/css/uicons-bold-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
+    <link rel='stylesheet'
+        href='https://cdn-uicons.flaticon.com/2.1.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-brands/css/uicons-brands.css'>
+    <link rel='stylesheet'
+        href='https://cdn-uicons.flaticon.com/2.3.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <!-- Fuentes -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Estilos personalizados -->
     <link rel="stylesheet" href="styles.css" />
+
+    <style>
+        /* ============================================
+           ESTILOS ADICIONALES - MD3
+           ============================================ */
+        :root {
+            --md-primary: #1A237E;
+            --md-on-primary: #FFFFFF;
+            --md-primary-container: #DDE1FF;
+            --md-on-primary-container: #0A1452;
+            --md-surface: #F8F9FE;
+            --md-surface-container: #F0F1F8;
+            --md-on-surface: #1A1B1F;
+            --md-on-surface-variant: #45464F;
+            --md-outline: #757780;
+            --md-outline-variant: #C4C6CF;
+            --md-error: #BA1A1A;
+            --md-error-container: #FFDAD6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--md-surface);
+            color: var(--md-on-surface);
+        }
+
+        /* Botones MD3 */
+        .btn-md3-primary {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+            border: none;
+            border-radius: 100px;
+            padding: 12px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-md3-primary:hover {
+            box-shadow: 0 4px 16px rgba(26, 35, 126, 0.3);
+            transform: scale(1.02);
+        }
+
+        .btn-md3-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-md3-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Inputs MD3 */
+        .input-md3 {
+            background: #FFFFFF;
+            border: 2px solid var(--md-outline-variant);
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--md-on-surface);
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            width: 100%;
+            outline: none;
+        }
+
+        .input-md3:focus {
+            border-color: var(--md-primary);
+            box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.12);
+        }
+
+        .input-md3::placeholder {
+            color: var(--md-on-surface-variant);
+            opacity: 0.6;
+        }
+
+        /* File input MD3 */
+        .file-input-md3 {
+            background: #FFFFFF;
+            border: 2px solid var(--md-outline-variant);
+            border-radius: 16px;
+            padding: 10px 16px;
+            font-family: 'Inter', sans-serif;
+            color: var(--md-on-surface);
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-md3::file-selector-button {
+            background: var(--md-surface-container);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--md-on-surface);
+            cursor: pointer;
+            margin-right: 16px;
+            transition: all 0.2s;
+        }
+
+        .file-input-md3::file-selector-button:hover {
+            background: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+        }
+
+        /* Cards MD3 */
+        .card-md3 {
+            background: var(--md-surface-container);
+            border-radius: 28px;
+            padding: 32px;
+            border: 1px solid var(--md-outline-variant);
+            transition: box-shadow 0.3s;
+        }
+
+        .card-md3:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Tabla MD3 */
+        .table-md3 {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .table-md3 thead th {
+            text-align: left;
+            padding: 16px 12px;
+            color: var(--md-on-surface-variant);
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            border-bottom: 2px solid var(--md-outline-variant);
+        }
+
+        .table-md3 tbody td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--md-outline-variant);
+            vertical-align: middle;
+        }
+
+        .table-md3 tbody tr {
+            transition: background 0.2s;
+        }
+
+        .table-md3 tbody tr:hover {
+            background: rgba(26, 35, 126, 0.04);
+        }
+
+        /* Badge MD3 */
+        .badge-md3 {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--md-primary-container);
+            color: var(--md-on-primary-container);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* Mensajes MD3 */
+        .message-md3 {
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            display: none;
+            margin-top: 16px;
+            animation: slideDown 0.3s cubic-bezier(0.2, 0, 0, 1) forwards;
+        }
+
+        .message-md3.success {
+            display: block;
+            background: var(--md-primary-container);
+            border: 1px solid var(--md-primary);
+            color: var(--md-on-primary-container);
+        }
+
+        .message-md3.error {
+            display: block;
+            background: var(--md-error-container);
+            border: 1px solid var(--md-error);
+            color: var(--md-on-error-container);
+        }
+
+        .message-md3.loading {
+            display: block;
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline-variant);
+            color: var(--md-on-surface-variant);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Botones de acción MD3 */
+        .btn-icon-md3 {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            color: var(--md-on-surface-variant);
+        }
+
+        .btn-icon-md3:hover {
+            background: var(--md-primary-container);
+            color: var(--md-primary);
+            transform: scale(1.1);
+        }
+
+        .btn-icon-md3.danger:hover {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        /* Enlaces */
+        .link-md3 {
+            color: var(--md-primary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            word-break: break-all;
+            transition: color 0.2s;
+        }
+
+        .link-md3:hover {
+            color: #0D47A1;
+            text-decoration: underline;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px 0;
+            color: var(--md-on-surface-variant);
+        }
+
+        .empty-state .icon {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--md-surface-container);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--md-outline-variant);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-outline);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card-md3 {
+                padding: 20px;
+                border-radius: 20px;
+            }
+
+            .table-md3 {
+                font-size: 0.75rem;
+            }
+
+            .table-md3 thead th,
+            .table-md3 tbody td {
+                padding: 10px 6px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- HEADER -->
-        <header>
-            <h1>🎨 Canvas Manager</h1>
-            <p class="subtitle">Sube y gestiona tus Canvas para OpenTune</p>
+    <div class="container mx-auto px-4 py-6 max-w-5xl">
+
+        <!-- ============================================
+        HEADER - MD3
+        ============================================ -->
+        <header class="text-center py-8 relative">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <ion-icon name="albums-outline" class="text-4xl" style="color: var(--md-primary);"></ion-icon>
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight" style="color: var(--md-on-surface);">
+                    Canvas <span style="color: var(--md-primary);">Manager</span>
+                </h1>
+            </div>
+            <p class="text-base opacity-70" style="color: var(--md-on-surface-variant);">
+                Sube y gestiona tus Canvas animados para OpenTune
+            </p>
+            <div class="w-20 h-1 mx-auto mt-4 rounded-full" style="background: var(--md-primary); opacity: 0.5;"></div>
         </header>
 
-        <!-- FORMULARIO DE SUBIDA -->
-        <section class="upload-section">
-            <h2>📤 Subir nuevo Canvas</h2>
+        <!-- ============================================
+        FORMULARIO DE SUBIDA - MD3 Card
+        ============================================ -->
+        <section class="card-md3 mt-6">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-xl" style="color: var(--md-primary);">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                </span>
+                <h2 class="text-xl font-semibold" style="color: var(--md-on-surface);">Subir nuevo Canvas</h2>
+                <span class="badge-md3 ml-auto">
+                    <ion-icon name="information-circle-outline"></ion-icon>
+                    Video requerido MAX: 6MB
+                </span>
+            </div>
+
             <form id="uploadForm">
-                <div class="form-row">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                     <div class="form-group">
-                        <label for="artist">Artista *</label>
-                        <input type="text" id="artist" placeholder="Ej: SZA" required />
+                        <label class="block text-sm font-medium mb-2" style="color: var(--md-on-surface-variant);">
+                            <ion-icon name="person-outline" class="align-middle mr-1"></ion-icon>
+                            Artista *
+                        </label>
+                        <input type="text" id="artist" class="input-md3" placeholder="Ej: SZA" required />
                     </div>
                     <div class="form-group">
-                        <label for="album">Álbum *</label>
-                        <input type="text" id="album" placeholder="Ej: SOS" required />
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="song">Canción *</label>
-                        <input type="text" id="song" placeholder="Ej: Kill Bill" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="videoFile">Archivo de video *</label>
-                        <input type="file" id="videoFile" accept="video/mp4,video/webm" required />
+                        <label class="block text-sm font-medium mb-2" style="color: var(--md-on-surface-variant);">
+                            <ion-icon name="albums-outline" class="align-middle mr-1"></ion-icon>
+                            Álbum *
+                        </label>
+                        <input type="text" id="album" class="input-md3" placeholder="Ej: SOS" required />
                     </div>
                 </div>
-                <button type="submit" id="uploadBtn">🚀 Subir Canvas</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--md-on-surface-variant);">
+                            <ion-icon name="musical-notes-outline" class="align-middle mr-1"></ion-icon>
+                            Canción *
+                        </label>
+                        <input type="text" id="song" class="input-md3" placeholder="Ej: Kill Bill" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="block text-sm font-medium mb-2" style="color: var(--md-on-surface-variant);">
+                            <ion-icon name="videocam-outline" class="align-middle mr-1"></ion-icon>
+                            Archivo de video *
+                        </label>
+                        <input type="file" id="videoFile" class="file-input-md3" accept="video/mp4,video/webm"
+                            required />
+                    </div>
+                </div>
+                <button type="submit" id="uploadBtn" class="btn-md3-primary">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    Subir Canvas
+                </button>
             </form>
-            <div id="uploadMessage" class="message"></div>
+            <div id="uploadMessage" class="message-md3"></div>
         </section>
 
-        <!-- LISTA DE CANVAS -->
-        <section class="list-section">
-            <h2>📋 Canvas Subidos</h2>
-            <div id="loading">Cargando...</div>
-            <div id="canvasList" style="display: none;">
-                <table id="canvasTable">
-                    <thead>
-                        <tr>
-                            <th>Artista</th>
-                            <th>Álbum</th>
-                            <th>Canción</th>
-                            <th>URL</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="canvasTableBody"></tbody>
-                </table>
+        <!-- ============================================
+        LISTA DE CANVAS - MD3 Card
+        ============================================ -->
+        <section class="card-md3 mt-6">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-xl" style="color: var(--md-primary);">
+                    <ion-icon name="list-outline"></ion-icon>
+                </span>
+                <h2 class="text-xl font-semibold" style="color: var(--md-on-surface);">Canvas Subidos</h2>
+                <span id="totalBadge" class="badge-md3 ml-auto">
+                    <ion-icon name="cube-outline"></ion-icon>
+                    <span id="totalCount">0</span>
+                </span>
             </div>
-            <div id="emptyMessage" style="display: none;">
-                <p>No hay Canvas subidos todavía. ¡Sé el primero!</p>
+
+            <!-- Loading -->
+            <div id="loading" class="text-center py-10" style="color: var(--md-on-surface-variant);">
+                <ion-icon name="refresh-outline" class="text-3xl animate-spin inline-block mb-3"></ion-icon>
+                <p class="text-sm">Cargando...</p>
+            </div>
+
+            <!-- Tabla -->
+            <div id="canvasList" style="display: none;">
+                <div class="overflow-x-auto">
+                    <table class="table-md3">
+                        <thead>
+                            <tr>
+                                <th>Artista</th>
+                                <th>Álbum</th>
+                                <th>Canción</th>
+                                <th>URL</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="canvasTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyMessage" class="empty-state" style="display: none;">
+                <span class="icon">🎨</span>
+                <p class="text-base">No hay Canvas subidos todavía. ¡Sé el primero!</p>
+                <p class="text-sm opacity-60 mt-2" style="color: var(--md-on-surface-variant);">
+                    Sube un video para empezar a construir tu colección
+                </p>
             </div>
         </section>
+
+        <!-- ============================================
+        FOOTER
+        ============================================ -->
+        <footer class="footer-md3 text-center py-6 mt-4 text-sm"></footer>
+        <p>Hecho con ❤️ para OpenTune</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>

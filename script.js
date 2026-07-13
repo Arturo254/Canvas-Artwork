@@ -17,21 +17,51 @@ const canvasList = document.getElementById('canvasList');
 const canvasTableBody = document.getElementById('canvasTableBody');
 const loading = document.getElementById('loading');
 const emptyMessage = document.getElementById('emptyMessage');
+const totalCount = document.getElementById('totalCount');
 
 // ============================================
 // FUNCIONES
 // ============================================
 
+// Decodificar texto UTF-8
+function decodeText(text) {
+    if (!text) return '';
+    try {
+        // Decodificar entidades HTML
+        const txt = document.createElement('textarea');
+        txt.innerHTML = text;
+        return txt.value;
+    } catch (e) {
+        return text;
+    }
+}
+
+// Escapar HTML para prevenir XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Mostrar mensaje en el formulario
 function showMessage(element, message, type) {
     element.textContent = message;
-    element.className = 'message ' + type;
+    element.className = 'message-md3 ' + type;
+    element.style.display = 'block';
 }
 
 // Ocultar mensaje
 function hideMessage(element) {
-    element.className = 'message';
+    element.className = 'message-md3';
     element.textContent = '';
+    element.style.display = 'none';
+}
+
+// Actualizar contador total
+function updateTotalCount(count) {
+    if (totalCount) {
+        totalCount.textContent = count;
+    }
 }
 
 // Cargar lista de Canvas
@@ -48,64 +78,113 @@ async function loadCanvasList() {
 
         if (data.canvases && data.canvases.length > 0) {
             canvasList.style.display = 'block';
+            updateTotalCount(data.canvases.length);
             renderCanvasTable(data.canvases);
         } else {
             emptyMessage.style.display = 'block';
+            updateTotalCount(0);
         }
     } catch (error) {
         loading.style.display = 'none';
         console.error('Error al cargar la lista:', error);
         emptyMessage.style.display = 'block';
-        emptyMessage.innerHTML = '<p>❌ Error al cargar los Canvas. Intenta recargar la página.</p>';
+        emptyMessage.innerHTML = `
+            <span class="icon">❌</span>
+            <p class="text-base">Error al cargar los Canvas</p>
+            <p class="text-sm opacity-60 mt-2">${error.message}</p>
+        `;
     }
 }
 
 // Renderizar tabla de Canvas
 function renderCanvasTable(canvases) {
     canvasTableBody.innerHTML = '';
-    canvases.forEach((canvas, index) => {
+    
+    canvases.forEach((canvas) => {
+        // Decodificar texto
+        const artist = decodeText(canvas.artist);
+        const album = decodeText(canvas.album);
+        const song = decodeText(canvas.song);
+        
+        // Determinar si es video para preview
+        const isVideo = canvas.type === 'mp4' || canvas.type === 'webm' || canvas.type === 'mov';
+        
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${escapeHtml(canvas.artist)}</td>
-            <td>${escapeHtml(canvas.album)}</td>
-            <td>${escapeHtml(canvas.song)}</td>
+            <!-- Vista previa -->
             <td>
-                <a href="${canvas.url}" target="_blank" class="url-link">${canvas.url}</a>
+                ${isVideo ? `
+                    <div class="canvas-preview" onclick="window.open('${canvas.url}', '_blank')" title="Ver Canvas">
+                        <video muted>
+                            <source src="${canvas.url}" type="video/${canvas.type}">
+                        </video>
+                    </div>
+                ` : `
+                    <div class="canvas-preview flex items-center justify-center" style="background: var(--md-primary-container);" onclick="window.open('${canvas.url}', '_blank')" title="Ver Canvas">
+                        <ion-icon name="image-outline" style="font-size: 1.5rem; color: var(--md-primary);"></ion-icon>
+                    </div>
+                `}
             </td>
+            <!-- Artista -->
+            <td><span class="font-medium">${escapeHtml(artist)}</span></td>
+            <!-- Álbum -->
+            <td>${escapeHtml(album)}</td>
+            <!-- Canción -->
+            <td>${escapeHtml(song)}</td>
+            <!-- URL -->
             <td>
-                <button class="btn-copy" data-url="${canvas.url}" title="Copiar URL">📋</button>
-                <button class="btn-delete" data-id="${canvas.id}" title="Eliminar">🗑️</button>
+                <a href="${canvas.url}" target="_blank" class="link-md3" title="${canvas.url}">
+                    <ion-icon name="open-outline" style="font-size: 1rem;"></ion-icon>
+                    Ver
+                </a>
+            </td>
+            <!-- Acciones -->
+            <td>
+                <div class="flex items-center justify-center gap-1">
+                    <button class="btn-icon-md3" data-url="${canvas.url}" title="Copiar URL">
+                        <ion-icon name="copy-outline"></ion-icon>
+                    </button>
+                    <button class="btn-icon-md3 danger" data-id="${canvas.id}" title="Eliminar">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                </div>
             </td>
         `;
         canvasTableBody.appendChild(row);
     });
 
-    // Event listeners para copiar URL
-    document.querySelectorAll('.btn-copy').forEach(btn => {
-        btn.addEventListener('click', function() {
+    // ============================================
+    // EVENT LISTENER: Copiar URL
+    // ============================================
+    document.querySelectorAll('.btn-icon-md3[data-url]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             const url = this.dataset.url;
-            navigator.clipboard.writeText(url).then(() => {
-                showMessage(uploadMessage, '✅ URL copiada al portapapeles', 'success');
-                setTimeout(() => hideMessage(uploadMessage), 3000);
-            }).catch(() => {
-                // Fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = url;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showMessage(uploadMessage, '✅ URL copiada al portapapeles', 'success');
-                setTimeout(() => hideMessage(uploadMessage), 3000);
-            });
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showMessage(uploadMessage, '✅ URL copiada al portapapeles', 'success');
+                    setTimeout(() => hideMessage(uploadMessage), 3000);
+                }).catch(() => {
+                    fallbackCopy(url);
+                });
+            } else {
+                fallbackCopy(url);
+            }
         });
     });
 
-    // Event listeners para eliminar
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', async function() {
+    // ============================================
+    // EVENT LISTENER: Eliminar Canvas
+    // ============================================
+    document.querySelectorAll('.btn-icon-md3.danger').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.stopPropagation();
             const id = this.dataset.id;
-            if (confirm(`¿Eliminar este Canvas de "${this.closest('tr').querySelector('td:nth-child(3)').textContent}"?`)) {
+            const row = this.closest('tr');
+            const songName = row.querySelector('td:nth-child(4)')?.textContent || 'esta canción';
+            
+            if (confirm(`¿Eliminar el Canvas de "${songName.trim()}"?`)) {
                 try {
                     const response = await fetch(`${API_BASE}/delete`, {
                         method: 'DELETE',
@@ -113,12 +192,13 @@ function renderCanvasTable(canvases) {
                         body: JSON.stringify({ id })
                     });
                     const data = await response.json();
+                    
                     if (data.success) {
                         showMessage(uploadMessage, '✅ Canvas eliminado correctamente', 'success');
                         setTimeout(() => hideMessage(uploadMessage), 3000);
                         loadCanvasList(); // Recargar lista
                     } else {
-                        showMessage(uploadMessage, '❌ ' + data.error, 'error');
+                        showMessage(uploadMessage, '❌ ' + (data.error || 'Error al eliminar'), 'error');
                     }
                 } catch (error) {
                     showMessage(uploadMessage, '❌ Error al eliminar: ' + error.message, 'error');
@@ -128,19 +208,28 @@ function renderCanvasTable(canvases) {
     });
 }
 
-// Escapar HTML para prevenir XSS
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+// Fallback para copiar URL
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
+        showMessage(uploadMessage, '✅ URL copiada al portapapeles', 'success');
+        setTimeout(() => hideMessage(uploadMessage), 3000);
+    } catch (e) {
+        showMessage(uploadMessage, '❌ No se pudo copiar la URL', 'error');
+    }
+    document.body.removeChild(textarea);
 }
 
 // ============================================
-// EVENT LISTENERS
+// EVENT LISTENER: Subir Canvas
 // ============================================
-
-// En script.js, actualizar la función de submit
-
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -149,6 +238,7 @@ form.addEventListener('submit', async function(e) {
     const song = songInput.value.trim();
     const file = fileInput.files[0];
 
+    // Validar campos
     if (!artist || !album || !song || !file) {
         showMessage(uploadMessage, '❌ Por favor, completa todos los campos', 'error');
         return;
@@ -162,7 +252,7 @@ form.addEventListener('submit', async function(e) {
 
     // Validar tamaño (máximo 20MB)
     if (file.size > 20 * 1024 * 1024) {
-        showMessage(uploadMessage, '❌ El archivo excede 20MB', 'error');
+        showMessage(uploadMessage, '❌ El archivo excede 20MB. Por favor, comprime el video.', 'error');
         return;
     }
 
@@ -173,14 +263,13 @@ form.addEventListener('submit', async function(e) {
     formData.append('video', file);
 
     uploadBtn.disabled = true;
-    uploadBtn.textContent = '⏳ Subiendo...';
+    uploadBtn.innerHTML = '<ion-icon name="refresh-outline" class="animate-spin"></ion-icon> Subiendo...';
     showMessage(uploadMessage, '⏳ Subiendo Canvas...', 'loading');
 
     try {
         const response = await fetch(`${API_BASE}/upload`, {
             method: 'POST',
             body: formData
-            // ⚠️ NO pongas Content-Type manualmente, el navegador lo pone automáticamente con el boundary
         });
 
         const data = await response.json();
@@ -189,19 +278,23 @@ form.addEventListener('submit', async function(e) {
             showMessage(uploadMessage, `✅ Canvas subido correctamente!\nURL: ${data.url}`, 'success');
             form.reset();
             loadCanvasList();
+            // Scroll a la lista
+            document.querySelector('.list-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-            showMessage(uploadMessage, '❌ ' + data.error, 'error');
+            showMessage(uploadMessage, '❌ ' + (data.error || 'Error al subir el Canvas'), 'error');
         }
     } catch (error) {
         console.error('Error de conexión:', error);
         showMessage(uploadMessage, '❌ Error de conexión: ' + error.message, 'error');
     } finally {
         uploadBtn.disabled = false;
-        uploadBtn.textContent = '🚀 Subir Canvas';
+        uploadBtn.innerHTML = '<ion-icon name="cloud-upload-outline"></ion-icon> Subir Canvas';
     }
 });
 
 // ============================================
 // INICIALIZAR
 // ============================================
-loadCanvasList();
+document.addEventListener('DOMContentLoaded', function() {
+    loadCanvasList();
+});

@@ -1,40 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Canvas Manager - OpenTune</title>
-
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    
     <!-- Flowbite -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-
+    
     <!-- Iconos -->
-    <link rel='stylesheet'
-        href='https://cdn-uicons.flaticon.com/2.0.0/uicons-bold-straight/css/uicons-bold-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.0.0/uicons-bold-straight/css/uicons-bold-straight.css'>
     <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.0.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
-    <link rel='stylesheet'
-        href='https://cdn-uicons.flaticon.com/2.1.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
     <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-brands/css/uicons-brands.css'>
-    <link rel='stylesheet'
-        href='https://cdn-uicons.flaticon.com/2.3.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
-
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.3.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    
     <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
+    
     <!-- Fuentes -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="styles.css" />
-
+    
     <style>
         /* ============================================
            ESTILOS ADICIONALES - MD3
@@ -205,6 +199,29 @@
             font-weight: 600;
         }
 
+        /* Mini preview del canvas */
+        .canvas-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline-variant);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .canvas-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .canvas-preview video {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
         /* Mensajes MD3 */
         .message-md3 {
             padding: 16px 20px;
@@ -237,27 +254,23 @@
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Botones de acción MD3 */
+        /* Botones de acción MD3 - con iconos */
         .btn-icon-md3 {
             background: none;
             border: none;
             cursor: pointer;
-            padding: 8px 12px;
+            padding: 8px 10px;
             border-radius: 50%;
             font-size: 1.2rem;
             transition: all 0.2s;
             color: var(--md-on-surface-variant);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-icon-md3:hover {
@@ -271,11 +284,16 @@
             color: var(--md-error);
         }
 
+        .btn-icon-md3 .icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
         /* Enlaces */
         .link-md3 {
             color: var(--md-primary);
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             word-break: break-all;
             transition: color 0.2s;
         }
@@ -333,13 +351,17 @@
             .table-md3 tbody td {
                 padding: 10px 6px;
             }
+
+            .canvas-preview {
+                width: 40px;
+                height: 40px;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="container mx-auto px-4 py-6 max-w-5xl">
-
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        
         <!-- ============================================
         HEADER - MD3
         ============================================ -->
@@ -367,7 +389,7 @@
                 <h2 class="text-xl font-semibold" style="color: var(--md-on-surface);">Subir nuevo Canvas</h2>
                 <span class="badge-md3 ml-auto">
                     <ion-icon name="information-circle-outline"></ion-icon>
-                    Video requerido MAX: 6MB
+                    Video requerido
                 </span>
             </div>
 
@@ -401,8 +423,7 @@
                             <ion-icon name="videocam-outline" class="align-middle mr-1"></ion-icon>
                             Archivo de video *
                         </label>
-                        <input type="file" id="videoFile" class="file-input-md3" accept="video/mp4,video/webm"
-                            required />
+                        <input type="file" id="videoFile" class="file-input-md3" accept="video/mp4,video/webm" required />
                     </div>
                 </div>
                 <button type="submit" id="uploadBtn" class="btn-md3-primary">
@@ -440,6 +461,7 @@
                     <table class="table-md3">
                         <thead>
                             <tr>
+                                <th>Vista previa</th>
                                 <th>Artista</th>
                                 <th>Álbum</th>
                                 <th>Canción</th>
@@ -465,12 +487,11 @@
         <!-- ============================================
         FOOTER
         ============================================ -->
-        <footer class="footer-md3 text-center py-6 mt-4 text-sm"></footer>
-        <p>Hecho con ❤️ para OpenTune</p>
+        <footer class="text-center py-6 mt-4 text-sm opacity-50" style="color: var(--md-on-surface-variant);">
+            <p>Hecho con ❤️ para OpenTune</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
 </body>
-
 </html>

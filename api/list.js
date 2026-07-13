@@ -1,4 +1,6 @@
 // api/list.js
+import { list } from '@vercel/blob';
+
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Método no permitido. Usa GET.' });
@@ -13,18 +15,26 @@ export default async function handler(req, res) {
             });
         }
 
-        // 🔍 Buscar el índice
+        // 📋 Listar todos los blobs en la carpeta 'canvases/'
+        const blobs = await list({
+            prefix: 'canvases/'
+        });
+
+        // 🔍 Buscar el archivo index.json
         let indexData = { canvases: [] };
-        try {
-            const response = await fetch(
-                `https://${process.env.VERCEL_URL}/api/blob/canvases/index.json`
-            );
+        const indexBlob = blobs.blobs.find(b => b.pathname === 'canvases/index.json');
+
+        if (indexBlob) {
+            // Descargar el contenido de index.json
+            const response = await fetch(indexBlob.url);
             if (response.ok) {
                 indexData = await response.json();
+                console.log('📖 Índice cargado:', indexData.canvases.length);
             }
-        } catch (e) {}
+        }
 
-        const canvases = indexData.canvases.sort((a, b) => {
+        // Ordenar por fecha
+        const canvases = (indexData.canvases || []).sort((a, b) => {
             const aDate = a.uploadedAt || a.updatedAt || '';
             const bDate = b.uploadedAt || b.updatedAt || '';
             return bDate.localeCompare(aDate);

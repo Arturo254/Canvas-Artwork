@@ -1,5 +1,5 @@
 // api/upload.js
-import { put } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 
 // 🔧 Helper: Generar ID único
 function generateId(artist, album, song) {
@@ -77,14 +77,20 @@ export default async function handler(req, res) {
 
         console.log('✅ Archivo guardado:', blob.url);
 
-        // 📝 Guardar índice (como un archivo JSON separado)
+        // 📝 Leer índice actual usando list()
         let indexData = { canvases: [] };
         try {
-            const indexResponse = await fetch(
-                `https://${process.env.VERCEL_URL}/api/blob/canvases/index.json`
-            );
-            if (indexResponse.ok) {
-                indexData = await indexResponse.json();
+            const blobs = await list({
+                prefix: 'canvases/'
+            });
+            
+            const indexBlob = blobs.blobs.find(b => b.pathname === 'canvases/index.json');
+            if (indexBlob) {
+                const response = await fetch(indexBlob.url);
+                if (response.ok) {
+                    indexData = await response.json();
+                    console.log('📖 Índice cargado:', indexData.canvases.length);
+                }
             }
         } catch (e) {
             console.log('📝 Creando nuevo índice...');

@@ -18,7 +18,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Verificar token
         if (!process.env.BLOB_READ_WRITE_TOKEN) {
             return res.status(500).json({
                 success: false,
@@ -35,28 +34,33 @@ export default async function handler(req, res) {
             });
         }
 
-        // 🔍 Buscar el índice
+        // 📋 Listar todos los blobs
+        const blobs = await list({
+            prefix: 'canvases/'
+        });
+
+        // 🔍 Buscar index.json
         let indexData = { canvases: [] };
-        try {
-            const response = await fetch(
-                `https://${process.env.VERCEL_URL}/api/blob/canvases/index.json`
-            );
+        const indexBlob = blobs.blobs.find(b => b.pathname === 'canvases/index.json');
+
+        if (indexBlob) {
+            const response = await fetch(indexBlob.url);
             if (response.ok) {
                 indexData = await response.json();
             }
-        } catch (e) {}
+        }
 
-        const normalizedArtist = normalizeText(artist);
-        const normalizedAlbum = normalizeText(album);
-        const normalizedSong = normalizeText(song);
+        const normalizedArtist = normalizeText(artist || '');
+        const normalizedAlbum = normalizeText(album || '');
+        const normalizedSong = normalizeText(song || '');
 
         let bestMatch = null;
         let bestScore = 0;
 
-        for (const canvas of indexData.canvases) {
-            const cArtist = normalizeText(canvas.artist);
-            const cAlbum = normalizeText(canvas.album);
-            const cSong = normalizeText(canvas.song);
+        for (const canvas of (indexData.canvases || [])) {
+            const cArtist = normalizeText(canvas.artist || '');
+            const cAlbum = normalizeText(canvas.album || '');
+            const cSong = normalizeText(canvas.song || '');
 
             let score = 0;
 

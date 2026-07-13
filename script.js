@@ -27,7 +27,6 @@ const totalCount = document.getElementById('totalCount');
 function decodeText(text) {
     if (!text) return '';
     try {
-        // Decodificar entidades HTML
         const txt = document.createElement('textarea');
         txt.innerHTML = text;
         return txt.value;
@@ -101,17 +100,14 @@ function renderCanvasTable(canvases) {
     canvasTableBody.innerHTML = '';
     
     canvases.forEach((canvas) => {
-        // Decodificar texto
         const artist = decodeText(canvas.artist);
         const album = decodeText(canvas.album);
-        const song = decodeText(canvas.song);
+        const song = decodeText(canvas.song || '');
         
-        // Determinar si es video para preview
         const isVideo = canvas.type === 'mp4' || canvas.type === 'webm' || canvas.type === 'mov';
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <!-- Vista previa -->
             <td>
                 ${isVideo ? `
                     <div class="canvas-preview" onclick="window.open('${canvas.url}', '_blank')" title="Ver Canvas">
@@ -125,20 +121,15 @@ function renderCanvasTable(canvases) {
                     </div>
                 `}
             </td>
-            <!-- Artista -->
             <td><span class="font-medium">${escapeHtml(artist)}</span></td>
-            <!-- Álbum -->
             <td>${escapeHtml(album)}</td>
-            <!-- Canción -->
-            <td>${escapeHtml(song)}</td>
-            <!-- URL -->
+            <td>${escapeHtml(song) || '<span class="opacity-40 text-sm">Sin canción</span>'}</td>
             <td>
                 <a href="${canvas.url}" target="_blank" class="link-md3" title="${canvas.url}">
                     <ion-icon name="open-outline" style="font-size: 1rem;"></ion-icon>
                     Ver
                 </a>
             </td>
-            <!-- Acciones -->
             <td>
                 <div class="flex items-center justify-center gap-1">
                     <button class="btn-icon-md3" data-url="${canvas.url}" title="Copiar URL">
@@ -153,9 +144,7 @@ function renderCanvasTable(canvases) {
         canvasTableBody.appendChild(row);
     });
 
-    // ============================================
     // EVENT LISTENER: Copiar URL
-    // ============================================
     document.querySelectorAll('.btn-icon-md3[data-url]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -174,9 +163,7 @@ function renderCanvasTable(canvases) {
         });
     });
 
-    // ============================================
     // EVENT LISTENER: Eliminar Canvas
-    // ============================================
     document.querySelectorAll('.btn-icon-md3.danger').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.stopPropagation();
@@ -196,7 +183,7 @@ function renderCanvasTable(canvases) {
                     if (data.success) {
                         showMessage(uploadMessage, '✅ Canvas eliminado correctamente', 'success');
                         setTimeout(() => hideMessage(uploadMessage), 3000);
-                        loadCanvasList(); // Recargar lista
+                        loadCanvasList();
                     } else {
                         showMessage(uploadMessage, '❌ ' + (data.error || 'Error al eliminar'), 'error');
                     }
@@ -235,12 +222,12 @@ form.addEventListener('submit', async function(e) {
 
     const artist = artistInput.value.trim();
     const album = albumInput.value.trim();
-    const song = songInput.value.trim();
+    const song = songInput.value.trim(); // ✅ Ahora opcional
     const file = fileInput.files[0];
 
-    // Validar campos
-    if (!artist || !album || !song || !file) {
-        showMessage(uploadMessage, '❌ Por favor, completa todos los campos', 'error');
+    // ✅ Solo artista, álbum y archivo son obligatorios
+    if (!artist || !album || !file) {
+        showMessage(uploadMessage, '❌ Artista, álbum y archivo son obligatorios. Canción es opcional.', 'error');
         return;
     }
 
@@ -250,16 +237,18 @@ form.addEventListener('submit', async function(e) {
         return;
     }
 
-    // Validar tamaño (máximo 20MB)
-    if (file.size > 20 * 1024 * 1024) {
-        showMessage(uploadMessage, '❌ El archivo excede 20MB. Por favor, comprime el video.', 'error');
+    // Validar tamaño (máximo 6MB)
+    if (file.size > 6 * 1024 * 1024) {
+        showMessage(uploadMessage, '❌ El archivo excede 6MB. Por favor, comprime el video.', 'error');
         return;
     }
 
     const formData = new FormData();
     formData.append('artist', artist);
     formData.append('album', album);
-    formData.append('song', song);
+    if (song) {
+        formData.append('song', song); // Solo si tiene valor
+    }
     formData.append('video', file);
 
     uploadBtn.disabled = true;
@@ -278,7 +267,6 @@ form.addEventListener('submit', async function(e) {
             showMessage(uploadMessage, `✅ Canvas subido correctamente!\nURL: ${data.url}`, 'success');
             form.reset();
             loadCanvasList();
-            // Scroll a la lista
             document.querySelector('.list-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             showMessage(uploadMessage, '❌ ' + (data.error || 'Error al subir el Canvas'), 'error');

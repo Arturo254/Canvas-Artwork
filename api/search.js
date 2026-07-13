@@ -27,17 +27,16 @@ export default async function handler(req, res) {
 
         const { artist, album, song } = req.query;
 
-        if (!artist && !album && !song) {
+        // ✅ Al menos artista o álbum son necesarios
+        if (!artist && !album) {
             return res.status(400).json({
                 success: false,
-                error: 'Se requiere al menos un parámetro'
+                error: 'Se requiere al menos artista o álbum'
             });
         }
 
         // 📋 Listar todos los blobs
-        const blobs = await list({
-            prefix: 'canvases/'
-        });
+        const blobs = await list({ prefix: 'canvases/' });
 
         // 🔍 Buscar index.json
         let indexData = { canvases: [] };
@@ -64,14 +63,28 @@ export default async function handler(req, res) {
 
             let score = 0;
 
-            if (cArtist === normalizedArtist) score += 30;
-            else if (cArtist.includes(normalizedArtist) || normalizedArtist.includes(cArtist)) score += 15;
+            // ✅ PESO 1: Artista (muy importante)
+            if (artist) {
+                if (cArtist === normalizedArtist) score += 40;
+                else if (cArtist.includes(normalizedArtist) || normalizedArtist.includes(cArtist)) score += 20;
+            }
 
-            if (cAlbum === normalizedAlbum) score += 20;
-            else if (cAlbum.includes(normalizedAlbum) || normalizedAlbum.includes(cAlbum)) score += 10;
+            // ✅ PESO 2: Álbum (muy importante)
+            if (album) {
+                if (cAlbum === normalizedAlbum) score += 35;
+                else if (cAlbum.includes(normalizedAlbum) || normalizedAlbum.includes(cAlbum)) score += 18;
+            }
 
-            if (cSong === normalizedSong) score += 30;
-            else if (cSong.includes(normalizedSong) || normalizedSong.includes(cSong)) score += 15;
+            // ✅ PESO 3: Canción (solo si se proporcionó)
+            if (song && song.trim()) {
+                if (cSong === normalizedSong) score += 25;
+                else if (cSong.includes(normalizedSong) || normalizedSong.includes(cSong)) score += 12;
+            }
+
+            // ✅ Bonus: Si el álbum coincide exactamente con la canción (cuando no hay canción)
+            if (!song || !song.trim()) {
+                if (cAlbum === cSong && cAlbum !== '') score += 5;
+            }
 
             if (score > bestScore) {
                 bestScore = score;
@@ -79,7 +92,10 @@ export default async function handler(req, res) {
             }
         }
 
-        if (bestMatch && bestScore >= 10) {
+        // ✅ Umbral mínimo: con artista+álbum es más fácil alcanzarlo
+        const threshold = (song && song.trim()) ? 25 : 15;
+
+        if (bestMatch && bestScore >= threshold) {
             return res.status(200).json({
                 success: true,
                 found: true,

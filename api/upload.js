@@ -1,7 +1,7 @@
 // api/upload.js
 import { put, list } from '@vercel/blob';
 
-// 🔧 Helper: Generar ID único
+// 🔧 Helper: Generar ID único (con canción opcional)
 function generateId(artist, album, song) {
     const clean = (str) => str
         .toLowerCase()
@@ -9,7 +9,12 @@ function generateId(artist, album, song) {
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '');
-    return `${clean(artist)}_${clean(album)}_${clean(song)}`;
+    
+    let result = `${clean(artist)}_${clean(album)}`;
+    if (song && song.trim()) {
+        result += `_${clean(song)}`;
+    }
+    return result;
 }
 
 // 🔧 Helper: Obtener extensión del archivo
@@ -27,7 +32,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Verificar token de Vercel Blob
         if (!process.env.BLOB_READ_WRITE_TOKEN) {
             console.error('❌ Falta BLOB_READ_WRITE_TOKEN');
             return res.status(500).json({
@@ -36,25 +40,16 @@ export default async function handler(req, res) {
             });
         }
 
-        // Parsear FormData
         const { fields, files } = await parseMultipartFormData(req);
         
         console.log('📤 Fields:', Object.keys(fields));
         console.log('📤 Files:', Object.keys(files));
 
-        // Validar campos
-        if (!fields.artist || !fields.album || !fields.song) {
+        // ✅ Artist y album son obligatorios, song es opcional
+        if (!fields.artist || !fields.album) {
             return res.status(400).json({
                 success: false,
-                error: 'Faltan campos requeridos: artist, album, song'
-            });
-        }
-
-        // Validate video file size (MAX 6MB)
-        if (!files.video || files.video.size > 6 * 1024 * 1024) {
-            return res.status(400).json({
-                success: false,
-                error: 'El archivo de video debe ser menor a 6MB'
+                error: 'Faltan campos requeridos: artist, album (song es opcional)'
             });
         }
 
@@ -65,12 +60,20 @@ export default async function handler(req, res) {
             });
         }
 
+        // ✅ Validar tamaño (6MB máximo)
+        if (files.video.size > 6 * 1024 * 1024) {
+            return res.status(400).json({
+                success: false,
+                error: 'El archivo de video debe ser menor a 6MB'
+            });
+        }
+
         const artist = fields.artist.trim();
         const album = fields.album.trim();
-        const song = fields.song.trim();
+        const song = fields.song ? fields.song.trim() : ''; // ✅ Opcional
         const videoFile = files.video;
 
-        console.log('📤 Procesando:', { artist, album, song, filename: videoFile.filename });
+        console.log('📤 Procesando:', { artist, album, song: song || '(sin canción)', filename: videoFile.filename });
 
         const id = generateId(artist, album, song);
         const fileExt = getFileExtension(videoFile.filename);
@@ -85,13 +88,10 @@ export default async function handler(req, res) {
 
         console.log('✅ Archivo guardado:', blob.url);
 
-        // 📝 Leer índice actual usando list()
+        // 📝 Leer índice actual
         let indexData = { canvases: [] };
         try {
-            const blobs = await list({
-                prefix: 'canvases/'
-            });
-            
+            const blobs = await list({ prefix: 'canvases/' });
             const indexBlob = blobs.blobs.find(b => b.pathname === 'canvases/index.json');
             if (indexBlob) {
                 const response = await fetch(indexBlob.url);
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
             id: id,
             artist: artist,
             album: album,
-            song: song,
+            song: song || '', // ✅ Guardar vacío si no hay canción
             url: blob.url,
             type: fileExt,
             uploadedAt: new Date().toISOString()
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
             url: blob.url,
             artist: artist,
             album: album,
-            song: song,
+            song: song || '',
             message: 'Canvas subido correctamente'
         });
 
@@ -156,7 +156,6 @@ async function parseMultipartFormData(req) {
     const fields = {};
     const files = {};
 
-    // Obtener el body como buffer
     const chunks = [];
     for await (const chunk of req) {
         chunks.push(chunk);
@@ -175,7 +174,6 @@ async function parseMultipartFormData(req) {
 
     const boundary = boundaryMatch[1];
     const body = bodyBuffer.toString('binary');
-
     const parts = body.split(`--${boundary}`);
 
     for (const part of parts) {
